@@ -56,6 +56,7 @@ namespace UnityEditor.XCodeEditor
 		
 		public XCProject( string filePath ) : this()
 		{
+
 			if( !System.IO.Directory.Exists( filePath ) ) {
 				Debug.LogWarning( "XCode project path does not exist: " + filePath );
 				return;
@@ -253,6 +254,19 @@ namespace UnityEditor.XCodeEditor
 			}
 			modified = true;
 			return modified;	
+		}
+
+		public bool AddOtherLinkerFlagsWithForceLoad(string absoluteFilePath){
+			if (!File.Exists(absoluteFilePath)) {
+				return false;
+			}
+
+			AddOtherLinkerFlags ("-force_load");
+			System.Uri fileURI = new System.Uri( absoluteFilePath );
+			System.Uri rootURI = new System.Uri( ( projectRootPath + "/." ) );
+			string relativeFilePath = rootURI.MakeRelativeUri( fileURI ).ToString();
+
+			return AddOtherLinkerFlags (relativeFilePath);
 		}
 
 		public bool AddOtherLinkerFlags( string flag )
@@ -730,6 +744,7 @@ namespace UnityEditor.XCodeEditor
 			Debug.Log( "Adding files..." );
 			foreach( string filePath in mod.files ) {
 				string absoluteFilePath = System.IO.Path.Combine( mod.path, filePath );
+
 				this.AddFile( absoluteFilePath, modGroup );
 			}
 

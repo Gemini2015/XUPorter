@@ -30,6 +30,8 @@ namespace UnityEditor.XCodeEditor
 
 		public void Process(Hashtable plist)
 		{
+			if (plist == null) return;
+
 			Dictionary<string, object> dict = (Dictionary<string, object>)PlistCS.Plist.readPlist(plistPath);
 			foreach( DictionaryEntry entry in plist)
 			{
@@ -60,7 +62,9 @@ namespace UnityEditor.XCodeEditor
 			}
 			else
 			{
-				dict[key] = HashtableToDictionary<string, object>((Hashtable)value);
+//				dict[key] = HashtableToDictionary<string, object>((Hashtable)value);
+//				plistModified = true;
+				dict[key] = formatPListObject(value);
 				plistModified = true;
 			}
 		}
@@ -127,6 +131,35 @@ namespace UnityEditor.XCodeEditor
 				}
 			}
 			return null;
+		}
+
+		private object formatPListObject(object value)
+		{
+			if (value is ArrayList)
+			{
+				ArrayList arrayList = (ArrayList)value;
+				
+				List<object> list = new List<object>();
+				foreach (var obj in arrayList)
+				{
+					list.Add(formatPListObject(obj));
+				}
+				return list;
+			}
+			
+			if (value is Hashtable)
+			{
+				Hashtable hashTable = (Hashtable)value;
+				
+				Dictionary<string, object> dic = new Dictionary<string, object>();
+				foreach (DictionaryEntry entry in hashTable)
+				{
+					dic.Add(entry.Key.ToString(), formatPListObject(entry.Value));
+				}
+				return dic;
+			}
+			
+			return value;
 		}
 	}
 }
